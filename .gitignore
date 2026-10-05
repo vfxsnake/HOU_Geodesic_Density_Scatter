@@ -1,0 +1,25 @@
+# Houdini autosave / backups
+backup/
+*_bak*.hip*
+*.hip*.bak
+
+# Houdini caches & sim output (regenerable)
+cache/
+render/
+*.sim
+*.simdata
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+
+# Claude Code — per-machine settings
+.claude/settings.local.json
+
+# Local-only project files
+CLAUDE.md
+docs/session_log.md
+
+# Large profiler captures — keep the summary in bench/, not the raw dump
+bench/raw/
