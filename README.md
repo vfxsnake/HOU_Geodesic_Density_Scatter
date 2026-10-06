@@ -16,9 +16,9 @@ This is a learning project with two goals:
 
 ## Current status
 
-**As of 2026-10-05 — project set up; Milestone 1 not started.**
+**As of 2026-10-06 — Milestone 1 in progress (step 1 of the plan).**
 
-- **Milestone 1 (VEX prototype, euclidean): not started.**
+- **Milestone 1 (VEX prototype, euclidean): plan agreed; VEX include path working (package → `HOUDINI_PATH`, headers in `vex/include/`); sampled Voronoi assignment builds (2k seeds / 50k samples, both unrelaxed).**
 
 Known gaps: none yet.
 
@@ -29,8 +29,8 @@ Known gaps: none yet.
 ```
 HOU_Geodesic_Density_Scatter/
 ├── kernels/     ← OpenCL kernels (*.cl), loaded by the OpenCL SOP from file
-├── vex/         ← VEX prototype code
-├── hip/         ← scene files
+├── vex/include/ ← VEX headers, #included by wrangles
+├── hip/         ← demo.hipnc (final scene; milestone scenes stay local)
 ├── otls/        ← HDA
 ├── geo/         ← test geometry
 ├── bench/       ← benchmark results and profiler summaries
@@ -61,7 +61,7 @@ HOU_Geodesic_Density_Scatter/
 
 | # | Milestone | Status |
 |---|-----------|--------|
-| 1 | VEX prototype — euclidean Lloyd, no density | Not started |
+| 1 | VEX prototype — euclidean Lloyd, no density | In progress |
 | 2 | Density weighting | Not started |
 | 3 | Geodesic metric — thin-gap demo | Not started |
 | 4 | OpenCL port, naive — benchmark + profiler readbacks | Not started |

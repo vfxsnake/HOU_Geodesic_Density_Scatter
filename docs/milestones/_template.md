@@ -21,6 +21,19 @@ What the quantity *means*, then the formula. Houdini anchor (the SOP / VEX equiv
 |----------|--------|--------|--------|
 |          |        |        |        |
 
+## Implementation steps
+Ordered. Each step: the action, then the check that proves it worked.
+- [ ] 1. **Spike:** <smallest network that shows the effect> → <expected viewport result>.
+      Break it: <deliberate break> → <predicted failure>.
+- [ ] 2. <action> → <expected result in viewport / measurement>
+
+## Reference
+Keep at hand while implementing.
+- **Concepts / formulas:** meaning first, then the expression.
+- **Functions & parameters:** VEX / OpenCL functions and SOP parameters used, verified against the
+  installed Houdini docs.
+- **Pitfalls:** what is likely to go wrong and how it shows up.
+
 ## Network / files
 ### `<kernels/name.cl | vex/name.vfl | node path>`
 **Responsibility:** ...
