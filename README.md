@@ -16,9 +16,10 @@ This is a learning project with two goals:
 
 ## Current status
 
-**As of 2026-10-06 — Milestone 1 in progress (step 1 of the plan).**
+**As of 2026-10-12 — Milestone 1 complete; Milestone 2 planned, not started.**
 
-- **Milestone 1 (VEX prototype, euclidean): plan agreed; VEX include path working (package → `HOUDINI_PATH`, headers in `vex/include/`); sampled Voronoi assignment builds (2k seeds / 50k samples, both unrelaxed).**
+- **Milestone 1 (VEX prototype, euclidean): done.** Lloyd loop in `vex/include/gds_lloyd.h`. Nearest-neighbor stddev / mean 0.51 raw → plateau ≈ 0.17. Scatter's built-in relax reaches 0.11 at 30 iterations; the Lloyd floor comes from centroid sample noise — 400k relaxed samples bring it to 0.105, level with Scatter.
+- **Milestone 2 (density weighting): plan written** (`docs/milestones/m02_density_weighting.md`). Rungs: weighted centroid → ρ² remap → density-scattered samples (A/B) → capacity-constrained. Math in `docs/notes/density_weighted_lloyd.md`.
 
 Known gaps: none yet.
 
@@ -61,8 +62,8 @@ HOU_Geodesic_Density_Scatter/
 
 | # | Milestone | Status |
 |---|-----------|--------|
-| 1 | VEX prototype — euclidean Lloyd, no density | In progress |
-| 2 | Density weighting | Not started |
+| 1 | VEX prototype — euclidean Lloyd, no density | Done |
+| 2 | Density weighting | Planned |
 | 3 | Geodesic metric — thin-gap demo | Not started |
 | 4 | OpenCL port, naive — benchmark + profiler readbacks | Not started |
 | 5 | Residency restructure in compiled block — benchmark | Not started |

@@ -24,6 +24,7 @@ render/
 # Local-only project files
 CLAUDE.md
 docs/session_log.md
+.vscode/
 
 # Large profiler captures — keep the summary in bench/, not the raw dump
 bench/raw/

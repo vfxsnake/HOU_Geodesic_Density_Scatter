@@ -58,26 +58,59 @@ Each step: the action, then the check that proves it worked. Predict before ever
       from `vex/include/` → wrangle compiles and calls it. *Include path solved:* package JSON
       (`hpath` → project root) puts the repo on `HOUDINI_PATH`; vcc searches `vex/include` under
       every `HOUDINI_PATH` entry. Test header works (0, 10, 20…).
-- [ ] 1. **Spike:** test mesh (sphere or torus, ~2–5k polys) → Scatter A (seeds, ~2k, Force Total
+- [x] 1. **Spike:** test mesh (sphere or torus, ~2–5k polys) → Scatter A (seeds, ~2k, Force Total
       Count, Relax off) and Scatter B (samples, ~50k, different Global Seed, Relax **off** — no dependence on Scatter's relax). Sample wrangle:
       `i@cell = nearpoint(<seeds input>, @P)`, color samples by a random color from `cell`
       → the viewport shows the sampled Voronoi diagram as color patches.
       **Break it:** feed the *samples* themselves as the seed input → predict what the coloring
       shows, then check.
-- [ ] 2. **One Lloyd step (no loop):** seed wrangle reads samples with `cell == @ptnum`, averages
+- [x] 2. **One Lloyd step (no loop):** seed wrangle reads samples with `cell == @ptnum`, averages
       their `P` → seeds move. Before projecting, check: on a sphere, are moved seeds slightly inside
       the surface? (`xyzdist` value > 0.)
-- [ ] 3. **Project:** `xyzdist` to the mesh, `primuv(..., "P", ...)` → seeds back on the surface
+      *Done: big cells (≥60 samples) move ~1.6× more than small (≤5). Off-surface sign check skipped by
+      choice — projection is a separate wrangle, bypass it to see the drift.*
+- [x] 3. **Project:** `xyzdist` to the mesh, `primuv(..., "P", ...)` → seeds back on the surface
       (distance ≈ 0).
-- [ ] 4. **Loop:** wrap steps 1–3 (assign + update + project) in Block Begin (Fetch Feedback) /
+      *Done: distance to the mesh before projecting: max 0.0167, median 0.0009. After: 0 for all 2000 seeds.*
+- [x] 4. **Loop:** wrap steps 1–3 (assign + update + project) in Block Begin (Fetch Feedback) /
       Block End (Feedback Each Iteration). Iterations as a `ch()` slider. Samples and mesh enter
       from outside the loop → drag the iteration count: spacing evens out, change slows down.
-- [ ] 5. **Move code into `vex/include/`:** wrangles become include + call.
-- [ ] 6. **Measure:** a stats wrangle: per-seed nearest-neighbor distance (`nearpoints(..., 2)` and take
+      *Done: most movement happens in iterations 1–13, only a few visible moves after that.*
+- [x] 5. **Move code into `vex/include/`:** wrangles become include + call.
+      *Done: `vex/include/gds_lloyd.h` — `gds_assign_euclidean`, `gds_cell_center_position`,
+      `gds_project_to_surface`; cell attribute name is `GDS_CELL_ATTRIB` ("gds_cell"), written with
+      `setpointattrib`. Converted in place: no inline A/B kept, equality checked visually only.*
+- [x] 6. **Measure:** a stats wrangle: per-seed nearest-neighbor distance (`nearpoints(..., 2)` and take
       the second hit, the first is itself) → detail mean / stddev. Record raw scatter vs. N = 5, 10,
       20, 50. Also mean displacement per iteration (store `P` before the step, compare after).
-- [ ] 7. **Reference compare:** Scatter with Relax Iterations on, same seed count → stats side by side.
-- [ ] 8. *(Optional)* **Better init:** relaxed seed scatter as the loop input → iterations to reach the
+      Results (rubber toy, 5k seeds, NN distance):
+
+      | N  | mean    | stddev   | stddev / mean |
+      |----|---------|----------|---------------|
+      | 0  | 0.01955 | 0.01005  | 0.514         |
+      | 5  | 0.03233 | 0.00605  | 0.187         |
+      | 10 | 0.03278 | —        | —             |
+      | 20 | 0.03291 | 0.00559  | 0.170         |
+      | 30 | 0.03293 | 0.00556  | 0.169         |
+
+      Most of the gain comes by N = 5; plateau ≈ 0.17 from N ≈ 20 (topological defects + sample noise, not 0).
+      Displacement per iteration: skipped by choice — exponential decay observed visually, not measured.
+- [x] 7. **Reference compare:** Scatter with Relax Iterations on, same seed count → stats side by side.
+
+      | N  | Lloyd stddev/mean | Scatter relax stddev/mean |
+      |----|-------------------|---------------------------|
+      | 0  | 0.514             | 0.514                     |
+      | 5  | 0.187             | 0.149                     |
+      | 20 | 0.170             | 0.113                     |
+      | 30 | 0.169             | 0.108                     |
+
+      Scatter relax wins and is still improving at N = 30. Raising samples 100k → 400k lowers the Lloyd
+      plateau: centroid noise from samples per cell (~20) sets the floor. Not dug further. Matters again
+      in M2, where dense regions get fewer samples per cell.
+      400k samples **with Relax Points on** → Lloyd 0.105 at N = 30, slightly below Scatter's 0.108.
+      Evenly spread samples beat random ones for centroid estimates (count and relax changed together,
+      not separated).
+- [~] 8. *(Optional, skipped)* **Better init:** relaxed seed scatter as the loop input → iterations to reach the
       same stddev.
 
 ## Reference
@@ -120,11 +153,11 @@ Each step: the action, then the check that proves it worked. Predict before ever
 
 ## Network / files
 
-### `vex/include/lloyd.h` (name proposed)
+### `vex/include/gds_lloyd.h`
 **Responsibility:** assign-to-nearest, centroid-of-cell, project-to-surface functions.
 
 ### Nodes: `/obj/m01/…`
 **Inputs / outputs:**
-- samples: `i@cell` (point), written each iteration.
+- samples: `i@gds_cell` (point, name from `GDS_CELL_ATTRIB`), written each iteration.
 - seeds: `P` (point), updated. `v@P_prev` (point), for displacement.
 - stats: `f@nn_dist` (point). `f@nn_mean` and `f@nn_std` (detail).
