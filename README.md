@@ -16,10 +16,10 @@ This is a learning project with two goals:
 
 ## Current status
 
-**As of 2026-10-12 — Milestone 1 complete; Milestone 2 planned, not started.**
+**As of 2026-10-13 — Milestone 1 complete; Milestone 2 in progress (step 0, test density field).**
 
 - **Milestone 1 (VEX prototype, euclidean): done.** Lloyd loop in `vex/include/gds_lloyd.h`. Nearest-neighbor stddev / mean 0.51 raw → plateau ≈ 0.17. Scatter's built-in relax reaches 0.11 at 30 iterations; the Lloyd floor comes from centroid sample noise — 400k relaxed samples bring it to 0.105, level with Scatter.
-- **Milestone 2 (density weighting): plan written** (`docs/milestones/m02_density_weighting.md`). Rungs: weighted centroid → ρ² remap → density-scattered samples (A/B) → capacity-constrained. Math in `docs/notes/density_weighted_lloyd.md`.
+- **Milestone 2 (density weighting): in progress** (`docs/milestones/m02_density_weighting.md`). Test density field in `vex/include/gds_density.h` (point falloff + axis gradient). Rungs: weighted centroid → ρ² remap → density-scattered samples (A/B) → capacity-constrained. Math in `docs/notes/density_weighted_lloyd.md`.
 
 Known gaps: none yet.
 
@@ -63,7 +63,7 @@ HOU_Geodesic_Density_Scatter/
 | # | Milestone | Status |
 |---|-----------|--------|
 | 1 | VEX prototype — euclidean Lloyd, no density | Done |
-| 2 | Density weighting | Planned |
+| 2 | Density weighting | In progress |
 | 3 | Geodesic metric — thin-gap demo | Not started |
 | 4 | OpenCL port, naive — benchmark + profiler readbacks | Not started |
 | 5 | Residency restructure in compiled block — benchmark | Not started |
