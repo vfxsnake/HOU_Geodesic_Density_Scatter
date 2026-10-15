@@ -14,7 +14,7 @@ A painted density attribute controls local spacing: relaxed points pack tighter 
 with a response close to `h ∝ ρ^(-1/2)`, and the point count stays fixed.
 
 ## Exit condition
-- **Seen:** on the rubber toy with a test density (gradient + blob), points pack visibly tighter where
+- **Seen:** on the rubber toy with each test density (gradient, blob), points pack visibly tighter where
   density is high. No holes, no clumps, no seeds drifting out of low-density areas. Each rung is
   compared visually with the one before it.
 - **Measured:** the existing measure chain (mean and stddev of NN distance), restricted to a density
@@ -48,7 +48,7 @@ swapped between neighboring cells while a swap lowers the total squared distance
 ## Design decisions
 | Decision | Choice | Status | Reason |
 |----------|--------|--------|--------|
-| Test density | Procedural wrangle on the mesh: gradient along one axis + a blob, `f@density` (point) | Agreed | Reproducible for A/B. Attribute Paint for the artist demo later |
+| Test density | Two procedural wrangles on the mesh (axis gradient, blob), each writes `f@density` (point); a Switch picks one, no combining | Agreed (changed S9) | Reproducible for A/B. Each field tests one thing; step 4 needs a blob over a flat background. Attribute Paint for the artist demo later |
 | Density onto samples | Scatter's **Point Attributes** (`pointattribs`, default `*`) interpolates `density` from the mesh | Agreed (verified) | Samples are fixed, so the lookup happens once, outside the loop |
 | Weight | `f@gds_weight = pow(density, γ)` on the samples, `γ` as a `ch()` slider | Agreed | Precompute outside the loop; one slider covers rungs 1 and 3 |
 | Weighted centroid | New function `gds_cell_center_weighted` in `gds_lloyd.h`; `gds_cell_center_position` stays | Agreed | Superseded code stays as A/B |
@@ -60,8 +60,8 @@ swapped between neighboring cells while a swap lowers the total squared distance
 
 ## Implementation steps
 
-- [ ] 0. **Setup:** save m01 as `hip/m02_density_weighting.hipnc`. Density wrangle on the mesh
-      (gradient + blob), visualize as `Cd` → the gradient and blob show on the toy. Spreadsheet on the
+- [x] 0. **Setup:** save m01 as `hip/m02_density_weighting.hipnc`. Two density wrangles on the mesh
+      (gradient, blob) → Switch, visualize as `Cd` → each shows on the toy. Spreadsheet on the
       sample scatter → samples carry `density`.
 - [ ] 1. **Spike:** samples get `f@gds_weight = density` (γ fixed at 1 for now).
       `gds_cell_center_weighted` → `Σ w·P / Σ w` (notes §2). Switch SOP between plain and weighted
