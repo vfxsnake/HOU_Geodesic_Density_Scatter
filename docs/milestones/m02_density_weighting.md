@@ -63,7 +63,7 @@ swapped between neighboring cells while a swap lowers the total squared distance
 - [x] 0. **Setup:** save m01 as `hip/m02_density_weighting.hipnc`. Two density wrangles on the mesh
       (gradient, blob) → Switch, visualize as `Cd` → each shows on the toy. Spreadsheet on the
       sample scatter → samples carry `density`.
-- [ ] 1. **Spike:** samples get `f@gds_weight = density` (γ fixed at 1 for now).
+- [x] 1. **Spike:** samples get `f@gds_weight = density` (γ fixed at 1 for now).
       `gds_cell_center_weighted` → `Σ w·P / Σ w` (notes §2). Switch SOP between plain and weighted
       centroid → seeds pack toward the blob and the dense end of the gradient.
       **Break it:** invert the density (`1 - density`) → check.
@@ -112,6 +112,9 @@ Keep at hand while implementing.
   weight and their seeds get pulled toward the dense side.
 - **Samples per cell in dense regions:** with uniform samples, small cells get few samples → the M1
   noise floor, worse where it matters. Rung 6 is the fix.
+- **`pointattrib` return type:** it is overloaded on return type. Inside an expression
+  (`pointattrib(..., "P", ...) * w`) VEX picks the float version → wrong result. Assign to a typed
+  local (`vector p = pointattrib(...)`) first, then multiply.
 - **Capacity-constrained cost:** the swap pass is sequential; it does not fit a point wrangle.
   Flag for M4/M5.
 

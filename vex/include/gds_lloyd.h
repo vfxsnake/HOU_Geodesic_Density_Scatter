@@ -45,7 +45,8 @@ vector gds_cell_center_weighted(int geometry_input_index, point_number; vector s
     foreach (int pt_num; sample_array_num)
     {
         float current_weight = pointattrib(geometry_input_index, "gds_weight", pt_num, success);
-        position_accumulation += pointattrib(geometry_input_index, "P",pt_num, success) * current_weight;
+        vector _position = pointattrib(geometry_input_index, "P", pt_num, success); 
+        position_accumulation += _position * current_weight;
         weight_accumulation += current_weight;
     }
 
