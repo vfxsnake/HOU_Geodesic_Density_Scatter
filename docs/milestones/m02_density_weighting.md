@@ -53,7 +53,7 @@ swapped between neighboring cells while a swap lowers the total squared distance
 | Weight | `f@gds_weight = pow(density, γ)` on the samples, `γ` as a `ch()` slider | Agreed | Precompute outside the loop; one slider covers rungs 1 and 3 |
 | Weighted centroid | New function `gds_cell_center_weighted` in `gds_lloyd.h`; `gds_cell_center_position` stays | Agreed | Superseded code stays as A/B |
 | `Σ w = 0` in a cell | Seed keeps its position (same rule as an empty cell) | Agreed | No mass → no centroid |
-| Zero-density regions | `density_min` floor slider added before the remap | Agreed | Without it, seeds inside a zero region never get pulled out |
+| Zero-density regions | ρ = 0 means no points: seeds with density 0 are deleted before the loop. `density_min` stays as a floor on the weight for near-zero regions | Agreed (session 10) | Artist expectation: painting 0 means empty, matching Scatter's density attribute. Lloyd never changes the count, so the delete is a separate step. Without it, seeds in a zero region freeze through the Σ w = 0 fallback |
 | Density in sample placement | A/B only (rung 4); revisits M1's "density goes in weights, never in sample placement" | Agreed | Same target, tests the noise claim |
 | Capacity-constrained | Balzer-style swap, detail wrangle (sequential), on density-scattered samples; new header `gds_ccvt.h` | Agreed | Last rung; compared against γ = 2 |
 | Band measure | Ramp on the seed's density masks which seeds accumulate; NN search still runs on all seeds | Agreed | Blasting first would inflate NN distance at the band edge |
@@ -68,14 +68,32 @@ swapped between neighboring cells while a swap lowers the total squared distance
       centroid → seeds pack toward the blob and the dense end of the gradient.
       **Break it:** invert the density (`1 - density`) → check.
       **Break it:** multiply density by 100 → check (notes §2: only ratios matter).
-- [ ] 2. **ρ = 0:** set the blob to 0 instead of high → look at the seeds inside it.
-      `Σ w = 0` fallback; `density_min` slider. Check: count of seeds with `isnan(@P.x)` = 0.
-- [ ] 3. **Band measure:** seeds read their density from the mesh (`xyzdist` + `primuv`, as in
+- [x] 2. **ρ = 0:** set the blob to 0 instead of high → look at the seeds inside it.
+      `Σ w = 0` fallback → seeds inside freeze (observed). `density_min` slider.
+      Check: count of seeds with `isnan(@P.x)` = 0.
+      **Delete at ρ = 0:** seeds carry `density` (Scatter Point Attributes on `seed_scatter`, as on
+      the samples) → delete seeds with density = 0 before `repeat_begin1`. Delete samples with
+      density = 0 too: otherwise they join the boundary seeds' cells and the `density_min` floor
+      pulls those seeds into the zone. → the zone is empty and the neighbors relax up to its edge.
+- [x] 3. **Band measure:** seeds read their density from the mesh (`xyzdist` + `primuv`, as in
       projection). Measure wrangle: `chramp("band", density) > 0.5` gates the two `setdetailattrib`
       calls, and a third accumulates the in-band count; the stats wrangle divides by that count, not
       `@numpt`. Check: band = blob only → stddev/mean near ≈0.17.
-- [ ] 4. **Weak response:** density 1/16 in the background, 1 in the blob. Band mean in the blob ÷ band
+      **Result:** band density > 0.5 → 526 seeds, stddev/mean 0.127 (all seeds: 0.141). Empty band
+      writes −1 sentinels.
+- [x] 4. **Weak response:** density 1/16 in the background, 1 in the blob. Band mean in the blob ÷ band
       mean in the background (notes §4 says ≈ 0.5). Record.
+      **Result (blob ≥ 0.95 ÷ background < 0.07, weighted centroid):**
+
+      | Seeds start | Iterations | Blob seeds | Ratio | stddev/mean bg |
+      |---|---:|---:|---:|---:|
+      | uniform | 8 / 32 / 128 | 209 / 212 / 212 | 0.975 / 0.966 / 0.965 | — |
+      | density-scattered | 0 / 10 / 128 | 1060 / 1066 / 1067 | 0.251 / 0.231 / 0.225 | 0.50 / 0.15 / 0.12 |
+
+      §4's ≈ 0.5 is not reproduced. Lloyd converges to the nearest resting state: with constant
+      weight inside a cell the weighted centroid equals the plain one, so the uniform layout in each
+      plateau is already a resting state (uniform start: equal cell areas, Σw per cell 74 vs 5). The large-scale
+      ratio is set by the seed start; Lloyd only evens local spacing. Step 5 premise to revisit.
 - [ ] 5. **Remap:** `γ` slider. γ = 2 → the same ratio (≈ 0.25 expected). Side by side with γ = 1.
       **Reference:** Scatter with Use Density Attribute + Relax on the same density. Its relax radius
       is ∝ `1/sqrt(density)` (Scatter docs), so its ratio should also be ≈ 0.25.
