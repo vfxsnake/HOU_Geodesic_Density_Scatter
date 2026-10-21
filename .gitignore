@@ -6,6 +6,7 @@ backup/
 # Milestone scenes are local working files — only the final demo scene (hip/demo.hipnc) is committed
 hip/*.hip*
 !hip/demo.hipnc
+hip/lloyd/
 
 # Houdini caches & sim output (regenerable)
 cache/

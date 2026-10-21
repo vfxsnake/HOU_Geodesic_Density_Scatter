@@ -16,10 +16,10 @@ This is a learning project with two goals:
 
 ## Current status
 
-**As of 2026-10-20 — Milestone 1 complete; Milestone 2 in progress (steps 1–4 done; next: revisit the γ remap step).**
+**As of 2026-10-21 — Restarting: re-plan pending.**
 
-- **Milestone 1 (VEX prototype, euclidean): done.** Lloyd loop in `vex/include/gds_lloyd.h`. Nearest-neighbor stddev / mean 0.51 raw → plateau ≈ 0.17. Scatter's built-in relax reaches 0.11 at 30 iterations; the Lloyd floor comes from centroid sample noise — 400k relaxed samples bring it to 0.105, level with Scatter.
-- **Milestone 2 (density weighting): in progress** (`docs/milestones/m02_density_weighting.md`). Test density in `vex/include/gds_density.h`: point falloff and axis gradient, each with a `(1 − t)^k` decay that keeps the min/max values exact; a Switch picks one. Samples carry `density` → `gds_weight`; `gds_cell_center_weighted` (Σ w·P / Σ w, Σ w = 0 keeps the seed) wired into the loop beside the plain centroid via a Switch — seeds pack toward high density; scaling all weights changes nothing (only ratios matter). Density 0 means no points: seeds and samples with density 0 are deleted before the loop; a `density_min` floor covers near-zero weights. Seeds re-read `density` from the mesh after the loop (`gds_density_at_surface`); a `chramp` band gates the spacing stats. Measured (16:1 density): from uniform seeds the blob/background spacing ratio freezes at 0.965 by 128 iterations — Lloyd stops at the nearest resting state, since constant weight inside a cell gives the plain centroid. From density-scattered seeds it holds ≈ 0.23 (raw 0.25) while stddev/mean drops 0.50 → 0.12: the seed start sets the density response, Lloyd evens the spacing. The predicted ρ^(-1/4) (≈ 0.5) is not reproduced. Rungs: weighted centroid → ρ² remap → density-scattered samples (A/B) → capacity-constrained. Math in `docs/notes/density_weighted_lloyd.md`.
+- **Lloyd prototype (old M1–M2): archived** on branch `lloyd-relaxation`. Euclidean and density-weighted Lloyd in VEX; finding: the seed start sets the large-scale density response, Lloyd only evens local spacing.
+- **New direction:** spacing-driven control (base spacing ± bias, painted multiplier, count derived from spacing), own density scatter, repulsion relaxation — VEX first, then OpenCL in compiled blocks. Reference: Scatter SOP + Relax. Goal and milestones below are being rewritten.
 
 Known gaps: none yet.
 
@@ -62,8 +62,8 @@ HOU_Geodesic_Density_Scatter/
 
 | # | Milestone | Status |
 |---|-----------|--------|
-| 1 | VEX prototype — euclidean Lloyd, no density | Done |
-| 2 | Density weighting | In progress |
+| 1 | VEX prototype — euclidean Lloyd, no density | Archived (`lloyd-relaxation`) |
+| 2 | Density weighting | Archived (`lloyd-relaxation`) |
 | 3 | Geodesic metric — thin-gap demo | Not started |
 | 4 | OpenCL port, naive — benchmark + profiler readbacks | Not started |
 | 5 | Residency restructure in compiled block — benchmark | Not started |
